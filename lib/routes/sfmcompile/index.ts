@@ -1,13 +1,12 @@
 import { Route } from '@/types';
 import ofetch from '@/utils/ofetch';
 import { load } from 'cheerio';
-import { parseDate } from '@/utils/parse-date';
+import { parseItems } from './utils';
 
 export const route: Route = {
     path: '/',
-    // categories: ['programming'],
-    // example: '/github/issue/vuejs/core/all/wontfix',
-    // parameters: { user: 'GitHub username', repo: 'GitHub repo name', state: 'the state of the issues. Can be either `open`, `closed`, or `all`. Default: `open`.', labels: 'a list of comma separated label names' },
+    categories: ['multimedia'],
+    example: '/sfmcompile',
     features: {
         requireConfig: false,
         requirePuppeteer: false,
@@ -16,52 +15,24 @@ export const route: Route = {
         supportPodcast: false,
         supportScihub: false,
     },
-    // radar: [
-    //     {
-    //         source: ['github.com/:user/:repo/issues', 'github.com/:user/:repo/issues/:id', 'github.com/:user/:repo'],
-    //         target: '/issue/:user/:repo',
-    //     },
-    // ],
-    name: 'index',
-    // maintainers: ['HenryQW', 'AndreyMZ'],
+    radar: [
+        {
+            source: ['sfmcompile.club'],
+            target: '/',
+        },
+    ],
+    name: 'Main page',
+    maintainers: ['vector0902'],
 
     handler: async () => {
-        // const { user, repo = 'RSSHub' } = ctx.req.param();
-
-        let url = `https://sfmcompile.club/`;
-        url = 'http://localhost:8000/sfm.html';
-        // url = 'http://localhost:8000/cat1.html';
-        // url = 'http://localhost:8000/pov1.html';
-        // const response = await ofetch(`https://sfmcompile.club/`);
+        const url = `https://sfmcompile.club/`;
+        // url = 'http://localhost:8000/sfm.html'; # local test
         const response = await ofetch(url);
         const $ = load(response);
 
         const items = $('.g1-collection-item')
             .toArray()
-            .map((item) => {
-                const it = $(item);
-                const title = it.find('.entry-title').children().first();
-                const href = title.attr('href');
-                const titleTxt = title.text();
-                const img = it.find('.mejs-poster-img').attr('src');
-                const cat = it.find('.entry-categories-inner').children();
-                const stats = it.find('.entry-stats');
-
-                return {
-                    title: titleTxt,
-                    link: href,
-                    guid: href,
-                    // image: img,
-                    pubDate: parseDate(new Date().toISOString()),
-                    author: 'NA',
-                    description: `<img src='${img}'></img> ${cat} ${stats}`,
-                    // description: `<![CDATA[ <img src='${img}'></img> ${cat} ${stats} ]]>`,
-                    // content: {
-                    //     html: `<img src=${img}></img> ${cat} ${stats}`,
-                    //     text: html,
-                    // },
-                };
-            });
+            .map((item) => parseItems($(item)));
 
         return {
             // channel title
