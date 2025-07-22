@@ -25,15 +25,49 @@ export const route: Route = {
     name: 'Test1',
     // maintainers: ['HenryQW', 'AndreyMZ'],
 
-    handler: (ctx) => {
-        const { user, repo = 'RSSHub' } = ctx.req.param();
+    handler: async () => {
+        // const { user, repo = 'RSSHub' } = ctx.req.param();
 
+        let url = `https://sfmcompile.club/`;
+        url = 'http://localhost:8000/sfm.html';
         // const response = await ofetch(`https://sfmcompile.club/`);
-        const response = ofetch(`https://sfmcompile.club/`);
+        const response = await ofetch(url);
         const $ = load(response);
 
-        console.log($);
+        const items = $('.g1-collection-item')
+            .toArray()
+            .map((item) => {
+                const it = $(item);
+                const title = it.find('.entry-title').children().first();
+                const href = title.attr('href');
+                const titleTxt = title.text();
+                const img = it.find('.mejs-poster-img').attr('src');
+                const cat = it.find('.entry-categories-inner').children();
+                const stats = it.find('.entry-stats');
 
+                return {
+                    title: titleTxt,
+                    link: href,
+                    guid: href,
+                    // image: img,
+                    pubDate: parseDate(new Date().toISOString()),
+                    author: 'NA',
+                    description: `<img src='${img}'></img> ${cat} ${stats}`,
+                    // description: `<![CDATA[ <img src='${img}'></img> ${cat} ${stats} ]]>`,
+                    // content: {
+                    //     html: `<img src=${img}></img> ${cat} ${stats}`,
+                    //     text: html,
+                    // },
+                };
+            });
+
+        return {
+            // channel title
+            title: `SFMCompile.club`,
+            // channel link
+            link: `https://sfmcompile.club/`,
+            // each feed item
+            item: items,
+        };
     },
-
 };
